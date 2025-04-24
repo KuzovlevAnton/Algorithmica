@@ -34,7 +34,6 @@ class Robot:
         self.US = UltrasonicSensor(Port.1)
 
 
-
     def init_vars(self):
 
         self.timer = StopWatch()
@@ -80,22 +79,28 @@ class Robot:
             self.ev3.screen.print(self.number)
             wait(10)
 
+
     # высота экрана 128 (0-127), ширина 178 (0-177), (0; 0) - в левом верхнем углу
     def print(self, data): # вывод текста на дисплей
         self.ev3.screen.print(data)
         
+        
     def clear(self): # вывод текста на дисплей
         self.ev3.screen.clear()
+
 
     def screen_draw_line(self, x1, x2, y1, y2, width): # вывод линии
         self.ev3.screen.draw_line(x1, x2, y1, y2, width)
 
+
     def screen_draw_box(self, x1, y1, x2, y2, r, fill): # вывод прямоугольника
         self.ev3.screen.draw_box(x1, y1, x2, y2, r, fill)
+
 
     def screen_draw_circle(self, x, y, r, fill): # вывод круга
         self.ev3.screen.draw_circle(x, y, r, fill)
         self.ev3.screen.draw_box(x1, y1, x2, y2, r, fill)
+
 
     def screen_draw_dot(self, x, y): # вывод точки
         self.ev3.screen.draw_line(x, y, x, y, 1)
@@ -104,34 +109,79 @@ class Robot:
     def object_height(self, h_max): # высота
         return h_max - self.US.distance()
 
+
     def object_color(self): # цвет объекта
         return self.LS.color()
+
 
     def object_light(self): # свет от объекта
         return self.LS.ambient()
     
+    
     def object_color_int(self): # цвет объекта по номеру
         return self.colors_int[self.LS.color()]
 
-    def object_reflection(self):
-        return self.LS.reflection()
 
     def object_reflection(self):
         return self.LS.reflection()
+
+
+    def object_reflection(self):
+        return self.LS.reflection()
+
 
     def angle1(self):
         return self.motor1.angle()
 
+
     def angle2(self):
         return self.motor2.angle()
+
 
     def angle3(self):
         return self.motor3.angle()
 
+
     def dist(self):
         return self.US.distance()
 
-    def button1_pressed(self)
+
+    def button1_pressed(self):
+        return self.button1.pressed()
+    
+    
+    def button2_pressed(self):
+        return self.button2.pressed()
+
+
+    def button1_wait(self):
+        while not self.button1.pressed():
+            ...
+    
+    
+    def button2_wait(self):
+        while not self.button2.pressed():
+            ...
+    
+    
+    def in_interval(self, start, end, value):
+        return start < value < end
+
+
+    def in_range(self, start, end, value):
+        return start <= value <= end
+    
+    
+    def greater_than(self, thereshold, value):
+        return value > thereshold
+    
+    
+    def change_range(self, value, start1, end1, start2, end2):
+        k1 = end1-start1
+        k2 = end2-start2
+        return (value - start1)/k1*k2+start2
+    
+    
     
 
     def main(self):
