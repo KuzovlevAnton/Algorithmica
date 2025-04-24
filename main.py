@@ -26,8 +26,8 @@ class Robot:
         self.motor2 = Motor(Port.B, positive_direction=Direction.CLOCKWISE)
         self.motor3 = Motor(Port.C, positive_direction=Direction.CLOCKWISE)
         
-        self.button1 = TouchSensor(Port.3)
-        self.button2 = TouchSensor(Port.4)
+        self.button1 = TouchSensor(Port.4)
+        self.button2 = TouchSensor(Port.3)
         
         self.LS = ColorSensor(Port.2)
         
@@ -113,21 +113,26 @@ class Robot:
     def object_color_int(self): # цвет объекта по номеру
         return self.colors_int[self.LS.color()]
 
-    def object_reflection(self): # цвет объекта
+    def object_reflection(self):
         return self.LS.reflection()
 
-    def object_reflection(self): # цвет объекта
+    def object_reflection(self):
         return self.LS.reflection()
 
-    def angle1(self): # цвет объекта
+    def angle1(self):
         return self.motor1.angle()
 
-    def angle2(self): # цвет объекта
+    def angle2(self):
         return self.motor2.angle()
 
-    def angle3(self): # цвет объекта
+    def angle3(self):
         return self.motor3.angle()
 
+    def dist(self):
+        return self.US.distance()
+
+    def button1_pressed(self)
+    
 
     def main(self):
         # -----------------------------------------------КОД-----------------------------------------------
