@@ -15,12 +15,23 @@ class Robot:
 
         # self.open()
 
-        while not self.Button1.pressed():
+        while not self.button1.pressed():
             ...
 
 
     def init_hardware(self):
         self.ev3 = EV3Brick()
+        
+        self.motor1 = Motor(Port.A, positive_direction=Direction.CLOCKWISE)
+        self.motor2 = Motor(Port.B, positive_direction=Direction.CLOCKWISE)
+        self.motor3 = Motor(Port.C, positive_direction=Direction.CLOCKWISE)
+        
+        self.button1 = TouchSensor(Port.3)
+        self.button2 = TouchSensor(Port.4)
+        
+        self.LS = ColorSensor(Port.2)
+        
+        self.US = UltrasonicSensor(Port.1)
 
 
 
@@ -28,24 +39,25 @@ class Robot:
 
         self.timer = StopWatch()
         
-        # self.motor1 = Motor(A, positive_direction=Direction.CLOCKWISE)
-        # self.motor2 = Motor(B, positive_direction=Direction.CLOCKWISE)
-        # self.motor3 = Motor(C, positive_direction=Direction.CLOCKWISE)
-        
-        # self.button1 = TouchSensor(3)
-        # self.button2 = TouchSensor(4)
-        
-        # self.LS = ColorSensor(2)
-        
-        self.US = UltrasonicSensor(1)
-        
-        
-        
-
         self.number = 0
-    
+        
+        self.colors_int = {
+            None: 0,
+            Color.BLACK: 1,
+            Color.BLUE: 2,
+            Color.GREEN: 3,
+            Color.YELLOW: 4,
+            Color.RED: 5,
+            Color.WHITE: 6,
+            Color.BROWN: 7,
+            Color.ORANGE: 8,
+            Color.PURPLE: 9,
+        }
+
+
     def beep(self, frequrency=300): # гудок
         self.ev3.speaker.beep(frequrency)
+
 
     # ввод и вывод данных
     def enter(self): # ввод числа
@@ -88,9 +100,33 @@ class Robot:
     def screen_draw_dot(self, x, y): # вывод точки
         self.ev3.screen.draw_line(x, y, x, y, 1)
 
+    
+    def object_height(self, h_max): # высота
+        return h_max - self.US.distance()
 
+    def object_color(self): # цвет объекта
+        return self.LS.color()
 
+    def object_light(self): # свет от объекта
+        return self.LS.ambient()
+    
+    def object_color_int(self): # цвет объекта по номеру
+        return self.colors_int[self.LS.color()]
 
+    def object_reflection(self): # цвет объекта
+        return self.LS.reflection()
+
+    def object_reflection(self): # цвет объекта
+        return self.LS.reflection()
+
+    def angle1(self): # цвет объекта
+        return self.motor1.angle()
+
+    def angle2(self): # цвет объекта
+        return self.motor2.angle()
+
+    def angle3(self): # цвет объекта
+        return self.motor3.angle()
 
 
     def main(self):
