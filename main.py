@@ -1,10 +1,12 @@
 #!/usr/bin/env pybricks-micropython
-from math import floor, ceil
+
 from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import Motor, ColorSensor, TouchSensor, UltrasonicSensor
-from pybricks.parameters import Port, Direction, Stop, Button, Color
+from pybricks.ev3devices import Motor, ColorSensor, UltrasonicSensor, TouchSensor, GyroSensor
+from pybricks.parameters import Port, Direction, Button, Stop
+from pybricks.parameters import Color as Col
 from pybricks.tools import wait, StopWatch
 from pybricks.robotics import DriveBase
+import math
 
 
 class Robot:
@@ -13,206 +15,267 @@ class Robot:
         self.init_vars()
         self.init_hardware()
 
-        # self.open()
 
-        while not self.button1.pressed():
-            ...
-
-
-    def init_hardware(self):
+    # инит хардваре
+    def init_hardware(self): # инициализация оборудования
         self.ev3 = EV3Brick()
-        
-        self.motor1 = Motor(Port.A, positive_direction=Direction.CLOCKWISE)
-        self.motor2 = Motor(Port.B, positive_direction=Direction.CLOCKWISE)
-        self.motor3 = Motor(Port.C, positive_direction=Direction.CLOCKWISE)
-        
-        self.button1 = TouchSensor(Port.4)
-        self.button2 = TouchSensor(Port.3)
-        
-        self.LS = ColorSensor(Port.2)
-        
-        self.US = UltrasonicSensor(Port.1)
+
+        # Initialize the motors.
+        self.motor_1 = Motor(Port.B)
+        self.motor_2 = Motor(Port.C)
+
+        # Initialize the color sensor.
+        self.light_sensor = ColorSensor(Port.S2)
+        self.ultrasonic_sensor = UltrasonicSensor(Port.S1)
+
+        self.touch_sensor_1, self.touch_sensor_2 = 4, None
+
+        try:
+            self.touch_sensor_1 = TouchSensor(Port.S4)
+            self.touch_sensor_2 = TouchSensor(Port.S3)
+
+        except:
+            pass
 
 
-    def init_vars(self):
+    # инитим переменные
+    def init_vars(self): # инициализация переменных
 
-        self.timer = StopWatch()
-        
-        self.number = 0
-        
-        self.colors_int = {
-            None: 0,
-            Color.BLACK: 1,
-            Color.BLUE: 2,
-            Color.GREEN: 3,
-            Color.YELLOW: 4,
-            Color.RED: 5,
-            Color.WHITE: 6,
-            Color.BROWN: 7,
-            Color.ORANGE: 8,
-            Color.PURPLE: 9,
+        self.counter = 1 # инициализация counter
+
+        self.colors_int = { # инициализация цветов
+            Col.BLACK: 1,
+            Col.BLUE: 2,
+            Col.GREEN: 3,
+            Col.YELLOW: 4,
+            Col.RED: 5,
+            Col.WHITE: 6,
+            Col.BROWN: 7,
+            Col.ORANGE: 8,
+            Col.PURPLE: 9,
         }
 
 
-    def beep(self, frequrency=300): # гудок
-        self.ev3.speaker.beep(frequrency)
+        self.colors_int_2 = { # инициализация цветов
+            Col.BLACK: 1,
+            Col.BROWN: 1,
+            Col.WHITE: 2,
+            Col.BLUE: 3,
+            Col.RED: 4
+        }
+
+    # функция для воспроизведения сигнала
+    def beep(self): 
+        self.ev3.speaker.beep(300)
 
 
-    # ввод и вывод данных
-    def enter(self): # ввод числа
-        while not Button.CENTER in self.ev3.buttons.pressed():
-            if Button.UP in self.ev3.buttons.pressed():
-                self.number += 1
-                wait(200)
-            if Button.DOWN in self.ev3.buttons.pressed():
-                self.number -= 1
-                wait(200)
-            if Button.RIGHT in self.ev3.buttons.pressed():
-                self.number += 10
-            if Button.LEFT in self.ev3.buttons.pressed():
-                self.number -= 10
-                wait(50)
-            # if self.Button1.pressed():
-            #     self.number = self.number * 10
-            #     wait(400)
-            self.ev3.screen.clear()
-            self.ev3.screen.print(self.number)
-            wait(10)
+    # чтение значения отражения с датчика освещенности
+    def read_reflection(self):
+        return self.light_sensor.reflection()
+
+    
+    # чтение значения цвета с датчика освещенности
+    def read_color(self):
+        return self.light_sensor.color()
 
 
+    # чтение значения внешней освещенности с датчика освещенности
+    def read_ambient(self):
+        return self.light_sensor.ambient()
+
+
+    # функция для ожидания нажатия датчика касания
+    def wait_pressed(self):
+        while not self.touch_sensor_1.pressed(): pass
+        wait(300)
+
+    
     # высота экрана 128 (0-127), ширина 178 (0-177), (0; 0) - в левом верхнем углу
-    def print(self, data): # вывод текста на дисплей
+    # вывод текста на дисплей
+    def print(self, data): 
         self.ev3.screen.print(data)
-        
-        
-    def clear(self): # вывод текста на дисплей
+
+    
+    # вывод текста на дисплей
+    def clear(self): 
         self.ev3.screen.clear()
 
 
-    def screen_draw_line(self, x1, x2, y1, y2, width): # вывод линии
+    # вывод линии
+    def screen_draw_line(self, x1, x2, y1, y2, width):
         self.ev3.screen.draw_line(x1, x2, y1, y2, width)
 
 
-    def screen_draw_box(self, x1, y1, x2, y2, r, fill): # вывод прямоугольника
+    # вывод прямоугольника
+    def screen_draw_box(self, x1, y1, x2, y2, r, fill): 
         self.ev3.screen.draw_box(x1, y1, x2, y2, r, fill)
 
 
-    def screen_draw_circle(self, x, y, r, fill): # вывод круга
+    # вывод круга
+    def screen_draw_circle(self, x, y, r, fill): 
         self.ev3.screen.draw_circle(x, y, r, fill)
         self.ev3.screen.draw_box(x1, y1, x2, y2, r, fill)
 
 
-    def screen_draw_dot(self, x, y): # вывод точки
+    # вывод точки
+    def screen_draw_dot(self, x, y): 
         self.ev3.screen.draw_line(x, y, x, y, 1)
 
+
+    # функция для поворота на градусы первого мотора
+    def control_motor_1(self, deg: int, speed: int = 500, then=Stop.BRAKE):
+        self.motor_1.run_angle(deg, speed, then=then)
+
     
-    def object_height(self, h_max): # высота
-        return h_max - self.US.distance()
+    # функция для поворота на градусы второго мотора
+    def control_motor_2(self, deg: int, speed: int = 500, then=Stop.BRAKE):
+        self.motor_2.run_angle(deg, speed, then=then)
 
-
-    def object_color(self): # цвет объекта
-        return self.LS.color()
-
-
-    def object_light(self): # свет от объекта
-        return self.LS.ambient()
     
-    
-    def object_color_int(self): # цвет объекта по номеру
-        return self.colors_int[self.LS.color()]
+    # функция для определения угла поворота первого мотора
+    def get_angle_motor_1(self):
+        return self.motor_1.angle()
 
 
-    def object_reflection(self):
-        return self.LS.reflection()
+    # функция для определения угла поворота первого мотора
+    def get_angle_motor_2(self):
+        return self.motor_2.angle() 
 
 
-    def object_reflection(self):
-        return self.LS.reflection()
+    # функция для вывода информации на экран
+    def update_screen(self, data):
+        self.ev3.screen.clear()
+        self.ev3.screen.draw_text(0, 0, data)
 
 
-    def angle1(self):
-        return self.motor1.angle()
+    # чекнуть лимиты (граница)
+    def check_limits(self, val, min, max):
+        if min > val: val = min
+        if max < val: val = max
+
+        return val
 
 
-    def angle2(self):
-        return self.motor2.angle()
+    # считывание с датчика расстояния
+    def read_us_dist(self):
+        return self.check_limits(self.ultrasonic_sensor.distance(), 30, 1000)
 
 
-    def angle3(self):
-        return self.motor3.angle()
+    # функция для ввода числа
+    def input_number(self, limits=(), typeTouch=False):
+        """
+        limits: диапазон значений для ввод
+        typeTouch: вводим ентер кнопкой внешней или нет
+        """
+
+        def check_limits_counter():
+            if limits:
+                min, max = limits
+
+                if min > self.counter: self.counter = min
+                if max < self.counter: self.counter = max
+
+        self.update_screen(self.counter)
+
+        while Button.CENTER not in self.ev3.buttons.pressed():
+
+            if typeTouch == False:
+
+                if Button.UP in self.ev3.buttons.pressed():
+                    self.counter += 1
+
+                    check_limits_counter()
+
+                    self.update_screen(self.counter)
+                    wait(300)
+
+                elif Button.DOWN in self.ev3.buttons.pressed():
+                    self.counter -= 1
+
+                    check_limits_counter()
+
+                    self.update_screen(self.counter)
+                    wait(300)
+
+            else:
+
+                if self.touch_sensor_1.pressed():
+                    self.counter += 1
+
+                    check_limits_counter()
+
+                    self.update_screen(self.counter)
+                    wait(300)
+
+                elif self.touch_sensor_2.pressed():
+                    self.counter -= 1
+
+                    check_limits_counter()
+
+                    self.update_screen(self.counter)
+                    wait(300)
+
+        wait(500)
+        return self.counter
 
 
-    def dist(self):
-        return self.US.distance()
-
-
-    def button1_pressed(self):
-        return self.button1.pressed()
-    
-    
-    def button2_pressed(self):
-        return self.button2.pressed()
-
-
-    def button1_wait(self):
-        while not self.button1.pressed():
-            ...
-    
-    
-    def button2_wait(self):
-        while not self.button2.pressed():
-            ...
-    
-    
+    # проверяет на вхождение в интервал ( )
     def in_interval(self, start, end, value):
         return start < value < end
 
 
+    # проверяет на вхождение в диапазон []
     def in_range(self, start, end, value):
         return start <= value <= end
+
     
-    
+    # определяет трешолд больше или меньше
     def greater_than(self, thereshold, value):
         return value > thereshold
     
     
+    # сменяет диапазон значений, аналог функци map из C++
     def change_range(self, value, start1, end1, start2, end2):
-        k1 = end1-start1
-        k2 = end2-start2
-        return (value - start1)/k1*k2+start2
-    
-    
-    
+        k1 = end1 - start1
+        k2 = end2 - start2
+        return (value - start1) / k1 * k2 + start2
 
-    def main(self):
-        # -----------------------------------------------КОД-----------------------------------------------
+    def turn_motor(self):
         ...
+    
+    # main (для использования выше написанных функций)
+    def main(self) -> None:
+        # self.wait_pressed()
+        # self.value_a = self.read_reflection() > 50
+        # self.print("A: " + str(self.value_a))
+        # self.wait_pressed()
+        # self.value_b = self.read_reflection() > 50
+        # self.print("B: " + str(self.value_b))
+        # self.wait_pressed()
+        # self.print("result: " + str((self.value_a and self.value_b) or not self.value_a))
+        # wait(100000000)
+        
+        
+        self.wait_pressed()
+        color = self.colors_int_2[self.read_color()]
+        print(color)
+        while self.read_us_dist()//10>50:
+            wait(10)
+        wait(100)
+        data_list = [1,1,1]
+        while data_list[-1]<=50 or data_list[-2]<=50 or data_list[-3]<=50:
+            data_list.append(self.read_us_dist()//10)
+            wait(20)
+        print(data_list)
+        self.wait_pressed()
+        # self.print(str(color)+str(S))
+        wait(100000)
+        
+        
+        
+        
+        
 
 
-# конец класса
-
-
-
-robot = Robot()
-robot.main()
-
-
-
-# сделать функции возврата значения со всех датчиков (цвет, отражённый свет,
-# яркость внешнего освещения, угол гироскопа, энкодер, расстояние, высота объекта,
-# кнопка или датчик касания,
-# ожидание нажатия кнопки, ожидание нажатия 1 из нескольких кнопок,
-# ожидание нажатия нескольких из нескольких кнопок (кнопки на хабе и датчики касания))
-
-
-
-# принадлежность интервалу или диап-у:
-# функция с 3 параметрами - начало, конец и значение
-# 1 функция для диапазона (нестрогое неравенство) 1 для интервала (строгое неравенство)
-
-# сравнение с порогом:
-# в функцию вводится порог и значение и сравнивается
-
-
-# map из c++ (перевод из 1 промежутка в другой (например из диапазонаот 3 до 8,
-# перевести число в диапазон от 6 до 16 или от 0 до 10 и т.д.))
+r = Robot()
+r.main()
